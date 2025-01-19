@@ -20,7 +20,6 @@ const express = require('express');
 const app = express();
 
 const url = 'https://es.wikipedia.org/wiki/Categor%C3%ADa:M%C3%BAsicos_de_rap';
-const baseUrl = 'https://es.wikipedia.org';
 
 app.get('/', (req, res) => {
     axios.get(url).then((response) => {
@@ -34,14 +33,14 @@ app.get('/', (req, res) => {
             //cargo en urls todas las que estan dentro de ID: #mw-pages
             $('#mw-pages a').each((index, element) => {                
                 const ruta = $(element).attr('href');
-                urls.push(`${baseUrl}${ruta}`);
+                urls.push(ruta);
             });
 
             // Uso Promise.all() para esperar que carguen todos los datos antes de responder con json
             Promise.all(
-                //recorro urls
+                //recorro urls añadiendo la base específica de wikiloc
                 urls.map((url) => { 
-                   return axios.get(url).then((response) => {
+                   return axios.get(`https://es.wikipedia.org${url}`).then((response) => {
                         if (response.status === 200) {
                             const html = response.data;
                             const $ = cheerio.load(html);
@@ -57,7 +56,7 @@ app.get('/', (req, res) => {
                             });
 
                             $('p').each((index, p) => {
-                                textos.push($(p).text().trim());
+                                textos.push($(p).text());
                             });
 
                             infContainer.push({
